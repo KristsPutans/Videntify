@@ -18,7 +18,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:ci": "react-scripts test --watchAll=false --passWithNoTests --testPathIgnorePatterns=\"VideoIdentifier\"",
+    "test:ci": "react-scripts test --watchAll=false --passWithNoTests --ci",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "lint": "eslint src/**/*.{js,jsx}",
     "lint:fix": "eslint --fix src/**/*.{js,jsx}",
