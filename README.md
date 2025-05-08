@@ -2,6 +2,8 @@
 
 [![Videntify CI](https://github.com/KristsPutans/Videntify/actions/workflows/ci.yml/badge.svg)](https://github.com/KristsPutans/Videntify/actions/workflows/ci.yml)
 
+> Last tested: May 8, 2025
+
 ## Overview
 VidID is a sophisticated video identification system similar to Shazam but for videos. It allows users to identify videos from short clips, providing accurate matches with detailed metadata.
 
