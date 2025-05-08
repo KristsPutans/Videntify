@@ -1,0 +1,36 @@
+/* Main Layout Component Styles */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 70px; /* Height of the fixed header */
+}
+
+/* For sticky footer */
+.app-footer {
+  margin-top: auto;
+}
+
+/* Wrapper for page content */
+.page-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 60px; /* Adjust for smaller header on mobile */
+  }
+  
+  .page-wrapper {
+    padding: 0 1rem;
+  }
+}

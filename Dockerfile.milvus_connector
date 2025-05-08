@@ -1,0 +1,21 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install dependencies with pinned versions for compatibility
+# Pin Werkzeug to 2.0.3 which is compatible with Flask 2.0.1
+# Use pymilvus 2.0.1 which should be more compatible with Milvus server 2.0.0
+RUN pip install werkzeug==2.0.3 flask==2.0.1 requests==2.27.1 numpy==1.21.0 pymilvus==2.0.1
+
+# Copy the connector script
+COPY scripts/docker_milvus_connector.py /app/connector.py
+
+# Expose the port
+EXPOSE 5050
+
+# Set environment variables
+ENV FLASK_APP=connector
+ENV FLASK_ENV=development
+
+# Run the connector
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5050"]

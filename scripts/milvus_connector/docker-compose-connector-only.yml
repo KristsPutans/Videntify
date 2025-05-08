@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  milvus-connector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: milvus-connector
+    ports:
+      - "5050:5050"
+    environment:
+      - MILVUS_HOST=milvus-standalone
+      - MILVUS_PORT=19530
+    volumes:
+      - ../docker_milvus_connector.py:/app/connector.py
+    networks:
+      - milvus-net
+    restart: always
+
+networks:
+  milvus-net:
+    external: true

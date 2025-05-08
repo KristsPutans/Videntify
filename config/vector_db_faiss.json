@@ -1,0 +1,15 @@
+{
+  "vector_db": {
+    "type": "faiss_local",
+    "index_directory": "/tmp/vidid/faiss_indexes",
+    "dimensions": {
+      "cnn_features": 2048,
+      "perceptual_hash": 64,
+      "motion_pattern": 256,
+      "audio_spectrogram": 512
+    },
+    "metric": "cosine",
+    "auto_save": true,
+    "fallback_to_mock": true
+  }
+}

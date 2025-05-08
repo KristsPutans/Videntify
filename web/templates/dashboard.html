@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}VidID Dashboard{% endblock %}
+
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group me-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-refresh="dashboard-content">
+        <i class="fa fa-refresh"></i> Refresh
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fa fa-calendar"></i> Last 7 Days
+    </button>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" href="#">Today</a>
+        <a class="dropdown-item" href="#">Last 7 Days</a>
+        <a class="dropdown-item" href="#">Last 30 Days</a>
+        <a class="dropdown-item" href="#">This Month</a>
+        <a class="dropdown-item" href="#">Custom Range</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="dashboard-content" data-auto-refresh="300000">
+    <!-- System Stats Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="icon text-info-light">
+                    <i class="fa fa-database"></i>
+                </div>
+                <div class="stat-value">274,892</div>
+                <div class="stat-label">Total Videos</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="icon text-success-light">
+                    <i class="fa fa-users"></i>
+                </div>
+                <div class="stat-value">12,457</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="icon text-warning-light">
+                    <i class="fa fa-search"></i>
+                </div>
+                <div class="stat-value">45,689</div>
+                <div class="stat-label">Daily Queries</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="icon text-danger-light">
+                    <i class="fa fa-tachometer"></i>
+                </div>
+                <div class="stat-value">156ms</div>
+                <div class="stat-label">Avg Response Time</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Health -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>System Health</span>
+                    <span class="badge bg-success">Healthy</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Components Status</h5>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="status-indicator status-healthy"></span>
+                                            API Services
+                                        </td>
+                                        <td class="text-end">Operational</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="status-indicator status-healthy"></span>
+                                            Database
+                                        </td>
+                                        <td class="text-end">Operational</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="status-indicator status-healthy"></span>
+                                            Feature Extraction
+                                        </td>
+                                        <td class="text-end">Operational</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="status-indicator status-healthy"></span>
+                                            Matching Engine
+                                        </td>
+                                        <td class="text-end">Operational</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Resources Usage</h5>
+                            <div class="chart-container">
+                                <canvas id="resourcesChart" data-chart="resources"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content Ingestion & Performance -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <span>Content Ingestion (Last 7 Days)</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="ingestionChart" data-chart="ingestion"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <span>System Performance</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="performanceChart" data-chart="performance"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Activity & Top Content -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <span>User Activity</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="usersChart" data-chart="users"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <span>Top Identified Content</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Source</th>
+                                    <th>Queries</th>
+                                    <th>Last 24h</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Interstellar</td>
+                                    <td>Streaming</td>
+                                    <td>1,245</td>
+                                    <td>+12%</td>
+                                </tr>
+                                <tr>
+                                    <td>Stranger Things S4E1</td>
+                                    <td>Streaming</td>
+                                    <td>1,089</td>
+                                    <td>+8%</td>
+                                </tr>
+                                <tr>
+                                    <td>The Last of Us E3</td>
+                                    <td>Streaming</td>
+                                    <td>978</td>
+                                    <td>+24%</td>
+                                </tr>
+                                <tr>
+                                    <td>Friends S5E12</td>
+                                    <td>Television</td>
+                                    <td>854</td>
+                                    <td>-5%</td>
+                                </tr>
+                                <tr>
+                                    <td>Marvel Studios: Phase 5</td>
+                                    <td>YouTube</td>
+                                    <td>712</td>
+                                    <td>+17%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Additional dashboard-specific JavaScript can go here
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{
+  "vector_db": {
+    "type": "mock",
+    "dimensions": {
+      "cnn_features": 2048,
+      "perceptual_hash": 64,
+      "motion_pattern": 256,
+      "audio_spectrogram": 512
+    },
+    "storage_path": "/tmp/vidid/vector_db",
+    "simulate_latency_ms": 0,
+    "fallback_to_mock": true
+  }
+}

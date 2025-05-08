@@ -1,0 +1,395 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'VidID Video Identification System - AWS CloudFormation Template'
+
+Parameters:
+  Environment:
+    Description: Deployment environment
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    ConstraintDescription: must be a valid environment (dev, staging, prod).
+  
+  VPCCidrBlock:
+    Description: CIDR block for the VPC (e.g., 10.0.0.0/16)
+    Type: String
+    Default: 10.0.0.0/16
+  
+  DBUsername:
+    Description: Username for PostgreSQL database
+    Type: String
+    Default: vidid
+    NoEcho: true
+  
+  DBPassword:
+    Description: Password for PostgreSQL database
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    MaxLength: 41
+    ConstraintDescription: must be 8-41 characters.
+
+Resources:
+  # VPC and Network Configuration
+  VidIDVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-VPC-${Environment}
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VidIDVPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Select [0, !Cidr [!Ref VPCCidrBlock, 4, 8]]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-PublicSubnet1-${Environment}
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VidIDVPC
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Select [1, !Cidr [!Ref VPCCidrBlock, 4, 8]]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-PublicSubnet2-${Environment}
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VidIDVPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Select [2, !Cidr [!Ref VPCCidrBlock, 4, 8]]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-PrivateSubnet1-${Environment}
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VidIDVPC
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Select [3, !Cidr [!Ref VPCCidrBlock, 4, 8]]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-PrivateSubnet2-${Environment}
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-IGW-${Environment}
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VidIDVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VidIDVPC
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-PublicRT-${Environment}
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # Security Groups
+  APISecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for VidID API servers
+      VpcId: !Ref VidIDVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-API-SG-${Environment}
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for VidID database servers
+      VpcId: !Ref VidIDVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref APISecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-DB-SG-${Environment}
+
+  # RDS PostgreSQL Database
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for VidID RDS instances
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-DBSubnetGroup-${Environment}
+
+  PostgreSQLDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      DBName: vidid
+      Engine: postgres
+      EngineVersion: "13.4"
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      MultiAZ: false
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt DatabaseSecurityGroup.GroupId
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-PostgreSQL-${Environment}
+
+  # ECS Cluster for VidID API
+  VidIDECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub VidID-Cluster-${Environment}
+      CapacityProviders:
+        - FARGATE
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Weight: 1
+
+  # S3 Bucket for Video Storage
+  VideoStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub vidid-video-storage-${Environment}-${AWS::AccountId}
+      AccessControl: Private
+      LifecycleConfiguration:
+        Rules:
+          - Id: VideoStorageLifecycleRule
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 30
+                StorageClass: STANDARD_IA
+              - TransitionInDays: 90
+                StorageClass: GLACIER
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-VideoStorage-${Environment}
+
+  # S3 Bucket for Feature Vectors
+  FeatureVectorBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub vidid-feature-vectors-${Environment}-${AWS::AccountId}
+      AccessControl: Private
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-FeatureVectors-${Environment}
+
+  # IAM Role for ECS Tasks
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: VidIDS3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt VideoStorageBucket.Arn
+                  - !Sub ${VideoStorageBucket.Arn}/*
+                  - !GetAtt FeatureVectorBucket.Arn
+                  - !Sub ${FeatureVectorBucket.Arn}/*
+
+  # Load Balancer for API
+  APILoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub VidID-ALB-${Environment}
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroups:
+        - !Ref APISecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub VidID-ALB-${Environment}
+
+  APITargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub VidID-TG-${Environment}
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VidIDVPC
+      HealthCheckPath: /health
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthCheckIntervalSeconds: 30
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+
+  APIListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref APITargetGroup
+      LoadBalancerArn: !Ref APILoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  # ECS Service and Task Definition
+  VidIDAPITaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub VidID-API-${Environment}
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '2048'
+      Memory: '4096'
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: vidid-api
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/vidid-api:latest
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8000
+              HostPort: 8000
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /ecs/vidid-api-${Environment}
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: vidid-api
+          Environment:
+            - Name: VIDID_DB_URL
+              Value: !Sub postgresql://${DBUsername}:${DBPassword}@${PostgreSQLDatabase.Endpoint.Address}:${PostgreSQLDatabase.Endpoint.Port}/vidid
+            - Name: VIDID_ENV
+              Value: !Ref Environment
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: VIDEO_STORAGE_BUCKET
+              Value: !Ref VideoStorageBucket
+            - Name: FEATURE_VECTOR_BUCKET
+              Value: !Ref FeatureVectorBucket
+
+  VidIDAPIService:
+    Type: AWS::ECS::Service
+    DependsOn: APIListener
+    Properties:
+      ServiceName: !Sub VidID-API-Service-${Environment}
+      Cluster: !Ref VidIDECSCluster
+      TaskDefinition: !Ref VidIDAPITaskDefinition
+      LaunchType: FARGATE
+      DesiredCount: 2
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref APISecurityGroup
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+      LoadBalancers:
+        - ContainerName: vidid-api
+          ContainerPort: 8000
+          TargetGroupArn: !Ref APITargetGroup
+
+Outputs:
+  VPCID:
+    Description: The ID of the VPC
+    Value: !Ref VidIDVPC
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCID
+
+  DatabaseEndpoint:
+    Description: PostgreSQL database endpoint
+    Value: !GetAtt PostgreSQLDatabase.Endpoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-DBEndpoint
+
+  VideoStorageBucketName:
+    Description: S3 bucket for video storage
+    Value: !Ref VideoStorageBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-VideoStorageBucket
+
+  FeatureVectorBucketName:
+    Description: S3 bucket for feature vectors
+    Value: !Ref FeatureVectorBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-FeatureVectorBucket
+
+  APIURL:
+    Description: URL of the API load balancer
+    Value: !Sub http://${APILoadBalancer.DNSName}
+    Export:
+      Name: !Sub ${AWS::StackName}-APIURL

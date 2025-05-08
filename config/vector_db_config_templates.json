@@ -1,0 +1,51 @@
+{
+  "vector_db": {
+    "milvus": {
+      "type": "milvus",
+      "host": "localhost",
+      "port": 19530,
+      "user": "",
+      "password": "",
+      "collection_name_prefix": "vidid_",
+      "consistency_level": "Strong",
+      "auto_id": true,
+      "timeout": 10
+    },
+    "pinecone": {
+      "type": "pinecone",
+      "api_key": "YOUR_PINECONE_API_KEY",
+      "environment": "us-west1-gcp",
+      "project_name": "vidid",
+      "namespace": "default",
+      "dimensions": {
+        "cnn_features": 2048,
+        "perceptual_hash": 64,
+        "motion_pattern": 256,
+        "audio_spectrogram": 512
+      },
+      "metric": "cosine"
+    },
+    "faiss_local": {
+      "type": "faiss_local",
+      "index_directory": "/path/to/faiss/indexes",
+      "dimensions": {
+        "cnn_features": 2048,
+        "perceptual_hash": 64,
+        "motion_pattern": 256,
+        "audio_spectrogram": 512
+      },
+      "metric": "cosine",
+      "auto_save": true
+    },
+    "mock": {
+      "type": "mock",
+      "dimensions": {
+        "cnn_features": 2048,
+        "perceptual_hash": 64,
+        "motion_pattern": 256,
+        "audio_spectrogram": 512
+      },
+      "simulate_latency_ms": 0
+    }
+  }
+}

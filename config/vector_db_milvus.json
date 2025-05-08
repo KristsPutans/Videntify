@@ -1,0 +1,14 @@
+{
+  "vector_db": {
+    "type": "milvus",
+    "host": "localhost",
+    "port": 19530,
+    "user": "",
+    "password": "",
+    "collection_name_prefix": "vidid_",
+    "consistency_level": "Strong",
+    "auto_id": true,
+    "timeout": 10,
+    "fallback_to_mock": true
+  }
+}

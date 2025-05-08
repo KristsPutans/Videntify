@@ -1,0 +1,89 @@
+/* Search Page Styles */
+
+.search-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.search-page-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.search-page-header h1 {
+  font-size: 2.5rem;
+  color: #1a1a2e;
+  margin-bottom: 1rem;
+}
+
+.search-page-header p {
+  font-size: 1.2rem;
+  color: #6c757d;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Features section */
+.search-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.feature {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  width: 70px;
+  height: 70px;
+  background-color: rgba(77, 171, 247, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.feature-icon i {
+  font-size: 1.8rem;
+  color: #4dabf7;
+}
+
+.feature h3 {
+  font-size: 1.3rem;
+  color: #1a1a2e;
+  margin-bottom: 1rem;
+}
+
+.feature p {
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .search-page {
+    padding: 2rem 1rem;
+  }
+  
+  .search-page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .search-features {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}

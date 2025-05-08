@@ -1,0 +1,108 @@
+[
+  {
+    "source": "streaming",
+    "content_id": "netflix:80057281",
+    "title": "Stranger Things",
+    "tier": 1,
+    "metadata": {
+      "season": 4,
+      "episode": 1,
+      "release_date": "2022-05-27"
+    }
+  },
+  {
+    "source": "streaming",
+    "content_id": "disney:758421",
+    "title": "The Mandalorian",
+    "tier": 1,
+    "metadata": {
+      "season": 3,
+      "episode": 2,
+      "release_date": "2023-03-08"
+    }
+  },
+  {
+    "source": "streaming",
+    "content_id": "prime:B09MYXYZDN",
+    "title": "The Lord of the Rings: The Rings of Power",
+    "tier": 1,
+    "metadata": {
+      "season": 1,
+      "episode": 1,
+      "release_date": "2022-09-01"
+    }
+  },
+  {
+    "source": "youtube",
+    "content_id": "dQw4w9WgXcQ",
+    "title": "Rick Astley - Never Gonna Give You Up",
+    "tier": 3,
+    "metadata": {
+      "channel": "Rick Astley",
+      "publish_date": "2009-10-25"
+    }
+  },
+  {
+    "source": "television",
+    "content_id": "cbs:2023-05-06T20:00:00Z:3600",
+    "title": "60 Minutes",
+    "tier": 2,
+    "metadata": {
+      "channel": "CBS",
+      "broadcast_date": "2023-05-06"
+    }
+  },
+  {
+    "source": "streaming",
+    "content_id": "hbo:3624815",
+    "title": "The Last of Us",
+    "tier": 1,
+    "metadata": {
+      "season": 1,
+      "episode": 3,
+      "release_date": "2023-01-29"
+    }
+  },
+  {
+    "source": "streaming",
+    "content_id": "netflix:81405730",
+    "title": "Wednesday",
+    "tier": 1,
+    "metadata": {
+      "season": 1,
+      "episode": 1,
+      "release_date": "2022-11-23"
+    }
+  },
+  {
+    "source": "youtube",
+    "content_id": "jNQXAC9IVRw",
+    "title": "Me at the zoo",
+    "tier": 3,
+    "metadata": {
+      "channel": "jawed",
+      "publish_date": "2005-04-23"
+    }
+  },
+  {
+    "source": "streaming",
+    "content_id": "apple:umc.cmc.25tn3v8ku4b39l9mgvqwh7l7",
+    "title": "Ted Lasso",
+    "tier": 1,
+    "metadata": {
+      "season": 3,
+      "episode": 1,
+      "release_date": "2023-03-15"
+    }
+  },
+  {
+    "source": "television",
+    "content_id": "nbc:2023-05-05T22:30:00Z:5400",
+    "title": "Saturday Night Live",
+    "tier": 2,
+    "metadata": {
+      "channel": "NBC",
+      "broadcast_date": "2023-05-05"
+    }
+  }
+]

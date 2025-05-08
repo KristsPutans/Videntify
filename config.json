@@ -1,0 +1,24 @@
+{
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "debug": true,
+    "workers": 2,
+    "cors_origins": ["*"]
+  },
+  "metadata_db": {
+    "url": "sqlite:///vidid.db",
+    "pool_size": 10,
+    "max_overflow": 5
+  },
+  "vector_db": {
+    "type": "milvus",
+    "host": "localhost",
+    "port": 19530
+  },
+  "feature_extraction": {
+    "gpu_enabled": false,
+    "batch_size": 16,
+    "scene_detection_threshold": 30.0
+  }
+}

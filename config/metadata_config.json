@@ -1,0 +1,134 @@
+{
+    "auth": {
+        "enable_auth": true,
+        "default_role": "guest",
+        "token_expiry_seconds": 3600,
+        "role_permissions": {
+            "guest": ["public"],
+            "user": ["public", "basic_info"],
+            "premium": ["public", "basic_info", "external_api"],
+            "staff": ["public", "basic_info", "external_api", "sensitive"],
+            "admin": ["public", "basic_info", "external_api", "sensitive", "admin"]
+        }
+    },
+    "cache": {
+        "enabled": true,
+        "memory_cache": {
+            "enabled": true,
+            "ttl": 3600,
+            "max_size": 5000,
+            "cleanup_interval": 300
+        },
+        "file_cache": {
+            "enabled": true,
+            "ttl": 86400,
+            "directory": "./cache/metadata",
+            "max_size_mb": 500
+        },
+        "redis_cache": {
+            "enabled": false,
+            "ttl": 604800,
+            "host": "localhost",
+            "port": 6379,
+            "db": 0,
+            "password": "",
+            "prefix": "videntify:metadata:"
+        },
+        "content_ttls": {
+            "video": 3600,
+            "movie": 604800,
+            "tv_show": 172800,
+            "episode": 259200,
+            "music_video": 1209600,
+            "short": 43200,
+            "documentary": 1209600,
+            "commercial": 14400,
+            "other": 86400
+        },
+        "source_ttls": {
+            "file": 604800,
+            "local_db": 43200,
+            "tmdb": 604800,
+            "youtube": 86400,
+            "spotify": 259200,
+            "wikipedia": 432000,
+            "location": 864000,
+            "content_analysis": 2592000
+        }
+    },
+    "enrichment": {
+        "enabled": true,
+        "timeout_seconds": 30,
+        "concurrent_requests": 10,
+        "enrichers": {
+            "file": {
+                "enabled": true,
+                "priority": "LOW"
+            },
+            "local_db": {
+                "enabled": true,
+                "priority": "HIGH"
+            },
+            "tmdb": {
+                "enabled": true,
+                "priority": "MEDIUM",
+                "api_key": "YOUR_TMDB_API_KEY"
+            },
+            "youtube": {
+                "enabled": true,
+                "priority": "MEDIUM",
+                "api_key": "YOUR_YOUTUBE_API_KEY"
+            },
+            "spotify": {
+                "enabled": true,
+                "priority": "LOW",
+                "client_id": "YOUR_SPOTIFY_CLIENT_ID",
+                "client_secret": "YOUR_SPOTIFY_CLIENT_SECRET"
+            },
+            "wikipedia": {
+                "enabled": true,
+                "priority": "MEDIUM"
+            },
+            "locations": {
+                "enabled": true,
+                "priority": "MEDIUM",
+                "mapbox_api_key": "YOUR_MAPBOX_API_KEY"
+            },
+            "content_analysis": {
+                "enabled": true,
+                "priority": "HIGH"
+            }
+        }
+    },
+    "users": [
+        {
+            "user_id": "guest",
+            "username": "guest",
+            "role": "guest"
+        },
+        {
+            "user_id": "user1",
+            "username": "regular_user",
+            "role": "user",
+            "api_keys": ["user1_api_key"]
+        },
+        {
+            "user_id": "premium1",
+            "username": "premium_user",
+            "role": "premium",
+            "api_keys": ["premium1_api_key"]
+        },
+        {
+            "user_id": "staff1",
+            "username": "staff_user",
+            "role": "staff",
+            "api_keys": ["staff1_api_key"]
+        },
+        {
+            "user_id": "admin1",
+            "username": "admin_user",
+            "role": "admin",
+            "api_keys": ["admin1_api_key"]
+        }
+    ]
+}

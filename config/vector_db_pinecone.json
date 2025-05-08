@@ -1,0 +1,17 @@
+{
+  "vector_db": {
+    "type": "pinecone",
+    "api_key": "YOUR_PINECONE_API_KEY",
+    "environment": "us-west1-gcp",
+    "project_name": "vidid",
+    "namespace": "default",
+    "dimensions": {
+      "cnn_features": 2048,
+      "perceptual_hash": 64,
+      "motion_pattern": 256,
+      "audio_spectrogram": 512
+    },
+    "metric": "cosine",
+    "fallback_to_mock": true
+  }
+}

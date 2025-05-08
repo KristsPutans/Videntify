@@ -1,0 +1,90 @@
+{
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "debug": false,
+    "workers": 4,
+    "cors_origins": [
+      "*"
+    ]
+  },
+  "metadata_db": {
+    "url": "postgresql://postgres:postgres@localhost:5432/vidid",
+    "pool_size": 20,
+    "max_overflow": 10
+  },
+  "vector_db": {
+    "type": "milvus",
+    "host": "localhost",
+    "port": 19530,
+    "connector_host": "localhost",
+    "connector_port": 5050,
+    "dimension_mapping": {
+      "cnn_features": 2048,
+      "perceptual_hash": 64,
+      "motion_pattern": 256,
+      "audio_spectrogram": 512,
+      "scene_transition": 128,
+      "audio_transcript": 768
+    },
+    "index_params": {
+      "index_type": "IVF_FLAT",
+      "metric_type": "L2",
+      "params": {
+        "nlist": 1024
+      }
+    },
+    "search_params": {
+      "metric_type": "L2",
+      "params": {
+        "nprobe": 16
+      }
+    }
+  },
+  "object_storage": {
+    "type": "s3",
+    "bucket": "vidid-content",
+    "aws_access_key_id": "",
+    "aws_secret_access_key": "",
+    "region": "us-east-1",
+    "endpoint_url": "",
+    "credentials_path": "",
+    "project_id": ""
+  },
+  "feature_extraction": {
+    "gpu_enabled": true,
+    "batch_size": 32,
+    "model_path": "models/resnet50.pth",
+    "scene_detection_threshold": 30.0
+  },
+  "matching": {
+    "match_threshold": 0.85,
+    "default_top_k": 5,
+    "temporal_alignment_enabled": true
+  },
+  "indexing": {
+    "sharding_strategy": "content_based",
+    "reindex_interval_hours": 24,
+    "max_cache_size_gb": 10.0
+  },
+  "query_processing": {
+    "temp_dir": "/tmp",
+    "max_clip_duration_seconds": 60,
+    "preprocessing_enabled": true
+  },
+  "content_acquisition": {
+    "api_keys": {
+      "youtube": "",
+      "netflix": "",
+      "disney": ""
+    },
+    "batch_size": 50,
+    "max_concurrent_downloads": 10
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/vidid.log",
+    "max_size_mb": 100,
+    "backup_count": 10
+  }
+}
