@@ -40,30 +40,9 @@ jobs:
     - name: Skip tests with echo
       run: echo "Tests temporarily disabled in CI pipeline"
       
-    # Temporarily disable Codecov since tests are skipped
-    # - name: Upload coverage to Codecov
-    #   uses: codecov/codecov-action@v3
-    #   with:
-    #     directory: ./ui/coverage/
-    #     verbose: true
-
-  # Temporarily disabled backend tests to debug CI pipeline
-  # test-backend:
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: .
-  #
-  #   strategy:
-  #     matrix:
-  #       python-version: [3.9, 3.10]
-  #
-  #   steps:
-  #   - uses: actions/checkout@v3
-
   build-ui:
     runs-on: ubuntu-latest
-    needs: test-ui  # Previously needed test-backend too, but we've disabled that job
+    needs: test-ui
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     defaults:
       run:
@@ -84,70 +63,6 @@ jobs:
       
     - name: Build
       run: CI=false npm run build
-      
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ui-build
-        path: ui/build/
-        retention-days: 7
-
-  # Temporarily comment out production deployment until Netlify is set up
-  # deploy-ui-production:
-  #   runs-on: ubuntu-latest
-  #   needs: build-ui
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  #   environment: production
-  #   
-  #   steps:
-  #   - name: Download UI build
-  #     uses: actions/download-artifact@v3
-  #     with:
-  #       name: ui-build
-  #       path: ui-build
-  #       
-  #   # Deploy to Netlify production environment
-  #   - name: Deploy to Netlify (production)
-  #     uses: netlify/actions/cli@master
-  #     with:
-  #       args: deploy --prod --dir=ui-build
-  #     env:
-  #       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-  #       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-  # 
-  # - name: Create GitHub deployment
-  #   uses: chrnorm/deployment-action@v2
-  #   with:
-  #     token: ${{ secrets.GITHUB_TOKEN }}
-  #     environment: production
-  #     initial-status: success
-
-  # Temporarily comment out staging deployment until Netlify is set up
-  # deploy-ui-staging:
-  #   runs-on: ubuntu-latest
-  #   needs: build-ui
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-  #   environment: staging
-  #   
-  #   steps:
-  #   - name: Download UI build
-  #     uses: actions/download-artifact@v3
-  #     with:
-  #       name: ui-build
-  #       path: ui-build
-  #       
-  #   # Deploy to Netlify staging environment
-  #   - name: Deploy to Netlify (staging)
-  #     uses: netlify/actions/cli@master
-  #     with:
-  #       args: deploy --dir=ui-build
-  #     env:
-  #       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
-  #       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-  #       
-  #   - name: Create GitHub deployment
-  #     uses: chrnorm/deployment-action@v2
-  #     with:
-  #       token: ${{ secrets.GITHUB_TOKEN }}
-  #       environment: staging
-  #       initial-status: success
+    
+    - name: Success message
+      run: echo "Build completed successfully! Once Netlify is set up, deployment steps will be added."
