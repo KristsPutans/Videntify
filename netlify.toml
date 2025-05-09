@@ -1,15 +1,9 @@
 # Netlify configuration for Videntify UI
 
 [build]
-  base = "ui/"
+  base = "ui"
   command = "npm run build"
   publish = "build"
-  node_version = "20"
-
-# Environment variables
-[build.environment]
-  CI = "false"
-  NODE_ENV = "production"
 
 # Define redirects
 [[redirects]]
@@ -31,13 +25,3 @@
   for = "/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
-# Simplify processing
-[functions]
-  node_bundler = "esbuild"
-
-# Define plugins to disable for troubleshooting
-[plugins]
-  package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    enable = false
