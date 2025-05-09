@@ -74,7 +74,7 @@ const FIELD_FORMATTERS = {
  * @returns {any} Best value for the field
  */
 export const getBestValue = (metadata, field) => {
-  if (!metadata) return null;
+  if (!metadata) return undefined;
   
   // Get the appropriate priority list for this field
   const priorities = SOURCE_PRIORITIES[field] || SOURCE_PRIORITIES.default;
@@ -86,7 +86,7 @@ export const getBestValue = (metadata, field) => {
     }
   }
   
-  return null;
+  return undefined;
 };
 
 /**
@@ -120,32 +120,49 @@ export const formatField = (field, value) => {
  * @returns {Object} Enriched metadata
  */
 export const combineMetadata = (metadata, fields = null) => {
-  if (!metadata) return {};
+  if (!metadata) return { _sources: {} };
+  
+  // Field mappings for different sources
+  const fieldMappings = {
+    tmdb: {
+      overview: 'description'
+    },
+    imdb: {
+      plot: 'description'
+    },
+    wikipedia: {
+      url: 'wikipedia_url'
+    }
+  };
   
   // Get all available fields if not specified
   if (!fields) {
     fields = new Set();
     Object.keys(metadata).forEach(source => {
       if (metadata[source] && typeof metadata[source] === 'object') {
-        Object.keys(metadata[source]).forEach(field => fields.add(field));
+        Object.keys(metadata[source]).forEach(field => {
+          // Add the original field name
+          fields.add(field);
+          
+          // Also add any mapped field names
+          if (fieldMappings[source] && fieldMappings[source][field]) {
+            fields.add(fieldMappings[source][field]);
+          }
+        });
       }
     });
     fields = Array.from(fields);
   }
   
   // Combine fields from all sources based on priority
-  const result = {};
+  const result = { _sources: {} };
+  
+  // Process standard fields
   fields.forEach(field => {
     const value = getBestValue(metadata, field);
     if (value !== undefined && value !== null) {
       result[field] = formatField(field, value);
-    }
-  });
-  
-  // Add source info for each field
-  result._sources = {};
-  fields.forEach(field => {
-    if (result[field] !== undefined) {
+      
       // Find which source provided this value
       const priorities = SOURCE_PRIORITIES[field] || SOURCE_PRIORITIES.default;
       for (const source of priorities) {
@@ -154,6 +171,20 @@ export const combineMetadata = (metadata, fields = null) => {
           break;
         }
       }
+    }
+  });
+  
+  // Process mapped fields
+  Object.keys(fieldMappings).forEach(source => {
+    if (metadata[source]) {
+      Object.keys(fieldMappings[source]).forEach(originalField => {
+        const mappedField = fieldMappings[source][originalField];
+        // Only process if the result doesn't already have this field
+        if (!result[mappedField] && metadata[source][originalField] !== undefined) {
+          result[mappedField] = formatField(mappedField, metadata[source][originalField]);
+          result._sources[mappedField] = source;
+        }
+      });
     }
   });
   
@@ -198,57 +229,95 @@ export const getEnrichedMetadata = async (contentId, sources = null, forceRefres
 export const filterMetadataByPermission = (metadata, permission = 'public') => {
   if (!metadata) return {};
   
-  // Define permission levels and fields
-  const permissionLevels = ['public', 'user', 'premium', 'admin'];
-  const permissionRank = permissionLevels.indexOf(permission);
+  // Define permission levels and sections
+  const permissionLevels = ['guest', 'public', 'user', 'premium', 'admin'];
+  
+  // Handle 'guest' as equivalent to 'public' for backward compatibility
+  const effectivePermission = permission === 'guest' ? 'public' : permission;
+  const permissionRank = permissionLevels.indexOf(effectivePermission);
   
   // If invalid permission or admin, return all
   if (permissionRank < 0) return metadata;
   if (permission === 'admin') return metadata;
   
-  // Define field permissions (which fields are available at which level)
-  const fieldPermissions = {
-    // Public fields available to everyone
-    public: [
-      'title', 'overview', 'description', 'thumbnail_url', 'poster_url',
-      'release_date', 'duration', 'genres', 'vote_average', 'content_id'
-    ],
-    // Basic user fields
-    user: [
-      'directors', 'cast', 'backdrop_url', 'trailer_url', 'tags',
-      'keywords', 'runtime', 'language', 'timestamp', 'source_url'
-    ],
-    // Premium user fields
-    premium: [
-      'filming_locations', 'soundtrack', 'wikipedia_extract', 'imdb_id',
-      'tmdb_id', 'budget', 'revenue', 'production_companies', 'streaming_services',
-      'availability', 'similar_titles', 'media_type', 'collections'
-    ]
+  // Define section visibility for different permission levels
+  const sectionPermissions = {
+    // Sections available to public users (guests)
+    public: ['basic'],
+    // Sections available to regular users
+    user: ['basic', 'details', 'cast'],
+    // Sections available to premium users
+    premium: ['basic', 'details', 'cast', 'technical']
   };
-  
-  // Build list of allowed fields based on user permission
-  const allowedFields = new Set();
+
+  // Get allowed sections for this permission level
+  let allowedSections = [];
   for (let i = 0; i <= permissionRank; i++) {
     const level = permissionLevels[i];
-    if (fieldPermissions[level]) {
-      fieldPermissions[level].forEach(field => allowedFields.add(field));
+    if (sectionPermissions[level]) {
+      allowedSections = [...allowedSections, ...sectionPermissions[level]];
     }
   }
   
-  // Filter metadata to only include allowed fields
+  // Create a filtered copy of metadata with only allowed sections
   const filtered = {};
-  Object.keys(metadata).forEach(key => {
-    // Always include source info and special fields
-    if (key === '_sources' || key.startsWith('_')) {
-      filtered[key] = metadata[key];
-      return;
+  
+  // Handle standard format metadata (flat object with fields)
+  if (!metadata.basic && !metadata.technical) {
+    // Define field permissions (which fields are available at which level)
+    const fieldPermissions = {
+      // Public fields available to everyone
+      public: [
+        'title', 'overview', 'description', 'thumbnail_url', 'poster_url',
+        'release_date', 'duration', 'genres', 'vote_average', 'content_id'
+      ],
+      // Basic user fields
+      user: [
+        'directors', 'cast', 'backdrop_url', 'trailer_url', 'tags',
+        'keywords', 'runtime', 'language', 'timestamp', 'source_url'
+      ],
+      // Premium user fields
+      premium: [
+        'filming_locations', 'soundtrack', 'wikipedia_extract', 'imdb_id',
+        'tmdb_id', 'budget', 'revenue', 'production_companies', 'streaming_services',
+        'availability', 'similar_titles', 'media_type', 'collections'
+      ]
+    };
+    
+    // Get all allowed fields for this permission level
+    let allowedFields = [];
+    for (let i = 0; i <= permissionRank; i++) {
+      const level = permissionLevels[i];
+      if (fieldPermissions[level]) {
+        allowedFields = [...allowedFields, ...fieldPermissions[level]];
+      }
     }
     
-    // Only include fields allowed by permission
-    if (allowedFields.has(key)) {
-      filtered[key] = metadata[key];
+    // Filter metadata object to only include allowed fields
+    Object.keys(metadata).forEach(key => {
+      if (key.startsWith('_')) {
+        // Always include metadata fields starting with underscore (e.g. _sources)
+        filtered[key] = metadata[key];
+      } else if (allowedFields.includes(key)) {
+        // Include fields that are allowed for this permission level
+        filtered[key] = metadata[key];
+      }
+    });
+  }
+  // Handle formatted metadata (with sections like basic, technical, etc.)
+  else {
+    // Include only sections allowed for this permission level
+    Object.keys(metadata).forEach(section => {
+      if (allowedSections.includes(section) || section.startsWith('_')) {
+        filtered[section] = metadata[section];
+      }
+    });
+    
+    // Make sure non-allowed sections are completely undefined, not empty arrays
+    if (!allowedSections.includes('technical')) {
+      filtered.technical = undefined;
     }
-  });
+  }
   
   return filtered;
 };
@@ -257,11 +326,6 @@ export const filterMetadataByPermission = (metadata, permission = 'public') => {
 export {
   getEnrichedMetadata as fetchMetadata,
   combineMetadata as enrichMetadata,
-  getBestValue,
-  filterMetadataByPermission,
   FIELD_FORMATTERS,
   SOURCE_PRIORITIES
 };
-
-// Also export formatField for convenience
-export { formatField };
