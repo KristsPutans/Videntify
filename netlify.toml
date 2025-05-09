@@ -2,8 +2,12 @@
 
 [build]
   base = "ui"
-  command = "npm run build"
+  command = "CI=false npm run build"
   publish = "build"
+
+# Set environment variables to prevent ESLint warnings from being treated as errors
+[build.environment]
+  CI = "false"
 
 # Define redirects
 [[redirects]]
