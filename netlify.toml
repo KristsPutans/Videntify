@@ -1,9 +1,15 @@
 # Netlify configuration for Videntify UI
 
 [build]
+  base = "ui/"
   command = "npm run build"
   publish = "build"
   node_version = "20"
+
+# Environment variables
+[build.environment]
+  CI = "false"
+  NODE_ENV = "production"
 
 # Define redirects
 [[redirects]]
@@ -11,7 +17,7 @@
   to = "/index.html"
   status = 200
 
-# Define headers
+# Define headers - simplified for troubleshooting
 [[headers]]
   for = "/*"
   [headers.values]
@@ -19,10 +25,19 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer-when-downgrade"
-    Content-Security-Policy = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
 
 # Define asset caching
 [[headers]]
   for = "/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Simplify processing
+[functions]
+  node_bundler = "esbuild"
+
+# Define plugins to disable for troubleshooting
+[plugins]
+  package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    enable = false

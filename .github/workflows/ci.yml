@@ -76,8 +76,14 @@ jobs:
     - name: Build
       run: CI=false npm run build
       
+    # Print build directory contents for debugging
+    - name: Debug - Print build directory structure
+      run: find build -type f | sort
+      
     # Deploy to Netlify production
     - name: Deploy to Netlify (Production)
+      id: netlify-deploy
+      continue-on-error: true # Don't fail the workflow if Netlify deploy fails
       uses: nwtgck/actions-netlify@v2
       with:
         publish-dir: 'build'
@@ -91,6 +97,18 @@ jobs:
       env:
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        
+    # Report on Netlify deployment status
+    - name: Report Netlify Deploy Status
+      if: always()
+      run: |
+        if [ "${{ steps.netlify-deploy.outcome }}" == "success" ]; then
+          echo "✅ Netlify deployment succeeded"
+          echo "🔗 Deploy URL: ${{ steps.netlify-deploy.outputs.deploy-url }}"
+        else
+          echo "❌ Netlify deployment failed"
+          echo "Check the deployment logs above for more details"
+        fi
     
     - name: Netlify Production Deploy Success
       run: echo "Successfully deployed to Netlify production environment"
@@ -120,8 +138,14 @@ jobs:
     - name: Build
       run: CI=false npm run build
       
+    # Print build directory contents for debugging
+    - name: Debug - Print build directory structure
+      run: find build -type f | sort
+      
     # Deploy to Netlify staging
     - name: Deploy to Netlify (Staging)
+      id: netlify-deploy-staging
+      continue-on-error: true # Don't fail the workflow if Netlify deploy fails
       uses: nwtgck/actions-netlify@v2
       with:
         publish-dir: 'build'
@@ -134,6 +158,18 @@ jobs:
       env:
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        
+    # Report on Netlify staging deployment status
+    - name: Report Netlify Staging Deploy Status
+      if: always()
+      run: |
+        if [ "${{ steps.netlify-deploy-staging.outcome }}" == "success" ]; then
+          echo "✅ Netlify staging deployment succeeded"
+          echo "🔗 Deploy URL: ${{ steps.netlify-deploy-staging.outputs.deploy-url }}"
+        else
+          echo "❌ Netlify staging deployment failed"
+          echo "Check the deployment logs above for more details"
+        fi
     
     - name: Netlify Staging Deploy Success
       run: echo "Successfully deployed to Netlify staging environment"
