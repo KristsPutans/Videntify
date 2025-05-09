@@ -72,12 +72,14 @@ jobs:
     - name: Deploy to Netlify (Production)
       uses: nwtgck/actions-netlify@v2
       with:
-        publish-dir: './build'
+        publish-dir: 'build'
         production-branch: main
         production-deploy: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
         enable-pull-request-comment: true
         enable-commit-comment: true
+        enable-commit-status: true
+        fails-without-credentials: false
       env:
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -114,11 +116,13 @@ jobs:
     - name: Deploy to Netlify (Staging)
       uses: nwtgck/actions-netlify@v2
       with:
-        publish-dir: './build'
+        publish-dir: 'build'
         production-deploy: false
         github-token: ${{ secrets.GITHUB_TOKEN }}
         enable-pull-request-comment: true
         enable-commit-comment: true
+        enable-commit-status: true
+        fails-without-credentials: false
       env:
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
