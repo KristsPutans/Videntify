@@ -40,6 +40,14 @@ jobs:
     - name: Run tests
       run: npm run test:ci || echo "Tests completed with warnings"
       
+    # Debug step to verify Netlify secrets
+    - name: Debug - Check Netlify secrets
+      if: always()
+      run: |
+        echo "Checking if NETLIFY_SITE_ID exists: ${{ secrets.NETLIFY_SITE_ID != '' }}"
+        echo "Checking if NETLIFY_STAGING_SITE_ID exists: ${{ secrets.NETLIFY_STAGING_SITE_ID != '' }}"
+        echo "Checking if NETLIFY_AUTH_TOKEN exists: ${{ secrets.NETLIFY_AUTH_TOKEN != '' }}"
+      
     - name: Tests completion message
       run: echo "Testing and linting phase completed"
       
