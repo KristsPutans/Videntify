@@ -169,3 +169,49 @@ test('async operation completes', async () => {
   });
 });
 ```
+
+### Handling Promise Rejections
+
+To prevent unhandled promise rejections from causing test failures, we've implemented a global error handling approach:
+
+1. **Global Error Handlers**:
+   - Setup in `setupTests.js` to capture unhandled rejections at both Node.js and browser levels
+   - Uses `process.on('unhandledRejection')` to log but not crash tests on expected rejections
+
+2. **Utility Functions**:
+   - Located in `src/utils/jestErrorHandler.js` and `src/utils/testErrorHandlers.js`
+   - Provides safe wrappers for async operations and event handling
+
+Example of using the safe click handler:
+
+```jsx
+import { safeClick } from '../../utils/testErrorHandlers';
+
+test('handles click events safely', async () => {
+  // Setup
+  render(<MyComponent />);
+  const button = screen.getByRole('button');
+  
+  // Safe click that won't cause unhandled rejections
+  await safeClick(button);
+  
+  // Continue with test assertions
+});
+```
+
+Example of using the safe async wrapper for mocking rejections:
+
+```jsx
+import { createSafeApiMock } from '../../utils/jestErrorHandler';
+
+// Create a safe API mock that can reject without causing test failures
+const safeApiMock = createSafeApiMock('login', () => Promise.reject(new Error('Test error')));
+
+// Use in your test
+test('handles API error correctly', async () => {
+  // The rejection will be properly handled
+  expect(await safeApiMock.call()).rejects.toThrow('Test error');
+});
+```
+
+This approach ensures that tests remain stable and don't fail due to expected promise rejections during testing.
